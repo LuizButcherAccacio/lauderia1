@@ -1,3 +1,7 @@
-from ui import iniciar_interface
+from ui import mostrar_tela_inicial
 
-iniciar_interface()
+mostrar_tela_inicial()
+
+
+
+
