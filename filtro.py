@@ -1,6 +1,9 @@
 from datetime import datetime
 from utils import validar_data
 from storage import carregar_relatorio
+from docx import Document
+import os
+
 
 def filtrar_por_intervalo(dados, data_inicio, data_fim):
     data_inicio_dt = datetime.strptime(data_inicio, "%d/%m/%Y")
@@ -15,35 +18,46 @@ from tkinter import messagebox
 
 def aplicar_filtro(data_inicio, data_fim):
     if not validar_data(data_inicio) or not validar_data(data_fim):
+        from tkinter import messagebox
         messagebox.showerror("Erro", "Datas inválidas!")
-        return
+        return None
 
     dados = carregar_relatorio()
     filtrados = filtrar_por_intervalo(dados, data_inicio, data_fim)
 
-    #mostrar_resultado_filtrado(filtrados)
+    return filtrados
 
-"""def mostrar_resultado_filtrado(filtrados):
-    limpar_tela()
 
-    tk.Label(janela, text="Resultado do Filtro", font=("Arial", 14)).pack(pady=10)
+from docx import Document
 
-    if not filtrados:
-        tk.Label(janela, text="Nenhum registro encontrado").pack()
-    else:
-        for item in filtrados:
-            nome = item["nome_arquivo"].replace(".docx", "")
-            texto = f"{nome} - {item['data']}"
-            tk.Label(janela, text=texto).pack()
+def exportar_para_word(registros):
+    if not registros:
+        return
 
-    tk.Button(
-        janela,
-        text="Voltar",
-        command=mostrar_tela_inicial
-    ).pack(pady=10)
-"""
-"""def limpar_tela():
-    for widget in janela.winfo_children():
-        widget.destroy()
+    # 📁 cria pasta
+    pasta = "relatorios"
+    os.makedirs(pasta, exist_ok=True)
 
-"""
+    # 🕒 nome com timestamp
+    nome_arquivo = f"relatorio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+
+    # 📄 caminho completo
+    caminho = os.path.join(pasta, nome_arquivo)
+
+    # 🧾 cria documento
+    doc = Document()
+    doc.add_heading("Relatório Filtrado", 0)
+
+    table = doc.add_table(rows=1, cols=2)
+    table.rows[0].cells[0].text = 'Nome'
+    table.rows[0].cells[1].text = 'Data'
+
+    for item in registros:
+        row = table.add_row().cells
+        row[0].text = item["nome_arquivo"].replace(".docx", "")
+        row[1].text = item["data"]
+
+    # 🔥 salva no caminho correto
+    doc.save(caminho)
+
+    print(f"Arquivo salvo em: {os.path.abspath(caminho)}")
